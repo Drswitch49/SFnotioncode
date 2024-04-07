@@ -1,0 +1,2 @@
+database_path: 'path/to/health_data.db'
+cleaned_data_csv_path: '/path/to/cleaned_medical_data.csv'
