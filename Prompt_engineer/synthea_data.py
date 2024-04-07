@@ -2,8 +2,8 @@ import pandas as pd
 import sqlite3
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from typing import Dict, Any, Tuple
-import random
+from typing import Dict, Any, Tuple, Optional
+
 
 class SyntheaData:
     """
@@ -14,15 +14,6 @@ class SyntheaData:
         Initializes with configuration settings.
         """
         self.config = config
-
-    def import_cleaned_data_to_sqlite(self) -> None:
-        """
-        Imports cleaned medical data from a CSV file into an SQLite database.
-        """
-        conn = sqlite3.connect(self.config['database_path'])
-        df = pd.read_csv(self.config['cleaned_data_csv_path'])
-        df.to_sql('cleaned_medical_data', conn, if_exists='replace', index=False)
-        conn.close()
 
     def get_patient_data_by_diagnosis(self, diagnosis: str) -> Tuple[Dict[str, Any], Optional[str], Optional[str]]:
         """
@@ -45,8 +36,19 @@ class SyntheaData:
                 'observations': [selected_row.get('observation', '')],
                 'care_plans': [selected_row.get('DESCRIPTION_careplan', '')],
             }
-            modality = selected_row.get('modality', None)
-            body_area = selected_row.get('body_area', None)
+            modality = selected_row.get('modality', None)  # Assuming your database includes this column
+            body_area = selected_row.get('body_area', None)  # Assuming your database includes this column
             return patient_data, modality, body_area
         else:
             return {}, None, None
+
+        def import_cleaned_data_to_sqlite(self) -> None:
+            """
+            Imports cleaned medical data from a CSV file into an SQLite database.
+            """
+            conn = sqlite3.connect(self.config['database_path'])
+            df = pd.read_csv(self.config['cleaned_data_csv_path'])
+            # Assuming the table name you want to use is 'cleaned_medical_data'
+            df.to_sql('cleaned_medical_data', conn, if_exists='replace', index=False)
+            conn.close()
+
