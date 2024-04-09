@@ -6,7 +6,6 @@ from typing import Dict, Any, Tuple, Optional
 import yaml
 import argparse
 
-
 class SyntheaData:
     """
     Handles operations related to processing and retrieving patient data from a consolidated dataset.
@@ -19,7 +18,7 @@ class SyntheaData:
         conn = sqlite3.connect(self.config['database_path'])
         query = """
         SELECT * FROM cleaned_medical_data
-        WHERE description_cond LIKE ? OR reasondescription LIKE ?
+        WHERE DESCRIPTION_cond LIKE ? OR REASONDESCRIPTION LIKE ?
         """
         df = pd.read_sql_query(query, conn, params=(f'%{diagnosis}%', f'%{diagnosis}%'))
         conn.close()
@@ -29,7 +28,7 @@ class SyntheaData:
             patient_data = {
                 'age': relativedelta(datetime.now(), datetime.strptime(selected_row['BIRTHDATE'], '%Y-%m-%d')).years,
                 'gender': selected_row['GENDER'],
-                'conditions': [selected_row['description_cond']],
+                'conditions': [selected_row['DESCRIPTION_cond']],
                 'observations': [selected_row.get('observation', '')],
                 'care_plans': [selected_row.get('DESCRIPTION_careplan', '')],
             }
@@ -45,19 +44,29 @@ class SyntheaData:
         df.to_sql('cleaned_medical_data', conn, if_exists='replace', index=False)
         conn.close()
 
-
 def load_config(config_path: str) -> Dict[str, Any]:
     with open(config_path, 'r') as file:
         config = yaml.safe_load(file)
     return config
 
-
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Medical Report Generator')
-    # Update the default path to the full path of your config.yaml file
     parser.add_argument('--config_path', type=str, default='/Users/ayodejioyesanya/Documents/SFdev/Prompt_engineer/config.yaml', help='Path to the YAML configuration file.')
     return parser.parse_args()
 
+def generate_report(patient_data: Dict[str, Any]) -> str:
+    """
+    Generates a textual report based on the patient data.
+    """
+    report_lines = [
+        f"Patient Age: {patient_data['age']}",
+        f"Gender: {patient_data['gender']}",
+        f"Conditions: {', '.join(patient_data['conditions'])}",
+        f"Observations: {', '.join(patient_data['observations'])}",
+        f"Care Plans: {', '.join(patient_data['care_plans'])}",
+    ]
+    report = "\n".join(report_lines)
+    return report
 
 def main():
     args = parse_arguments()
@@ -67,11 +76,16 @@ def main():
     # Call import_cleaned_data_to_sqlite to ensure the database is populated before making queries
     data_processor.import_cleaned_data_to_sqlite()  # Make sure this line is uncommented and called here
 
-    # Example usage
-    diagnosis = "Example Diagnosis"
+    # Use "Prediabetes" as the example diagnosis to query
+    diagnosis = "Prediabetes"
     patient_data, modality, body_area = data_processor.get_patient_data_by_diagnosis(diagnosis)
     print(patient_data, modality, body_area)
 
+    if patient_data:  # Ensure there is data to generate a report from
+        report = generate_report(patient_data)
+        print("Generated Report:", report)
+    else:
+        print("No patient data found for the given diagnosis.")
 
 if __name__ == '__main__':
     main()
