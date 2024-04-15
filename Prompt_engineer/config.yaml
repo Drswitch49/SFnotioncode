@@ -1,2 +1,16 @@
 # Configuration file for the medical report generator
 cleaned_data_csv_path: '/Users/ayodejioyesanya/Desktop/Tdata/cleaned_medical_data.csv'
+
+# Configuration file for the medical report generator
+cleaned_data_csv_path: '/Users/ayodejioyesanya/Desktop/Tdata/cleaned_medical_data.csv'
+
+prompt_template: |
+  <s>[INST] <<SYS>> You are an experienced medical AI assistant trained to provide helpful and accurate 
+  information to patients. You have extensive knowledge of human anatomy, common medical conditions, and 
+  evidence-based treatments. Your responses should be empathetic, informative, and adhere to medical best 
+  practices. You will not provide any medical advice that could be harmful. [/INST]
+
+  Diagnosis: {diagnosis}. Patient's age: {age}. Gender: {gender}. 
+  Conditions: {conditions}. Observations: {observations}. Care plans: {care_plans}. 
+  Imaging modality: {modality}. Body area: {body_area}. 
+  Please provide a comprehensive report based on the patient's data and imaging results.</s>
