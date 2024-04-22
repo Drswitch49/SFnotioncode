@@ -1,7 +1,8 @@
+# main.py
 import argparse
 import yaml
+import pandas as pd
 from typing import Dict, Any, Optional
-from synthea_data import SyntheaData
 
 def load_config(config_path: str) -> Dict[str, Any]:
     """
@@ -18,22 +19,37 @@ def generate_medical_prompt(patient_data: Dict[str, Any], diagnosis: str, config
     prompt_template = config.get('prompt_template', "Default template if not specified in config.")
     prompt = prompt_template.format(
         diagnosis=diagnosis,
-        age=patient_data['age'],
-        gender=patient_data['gender'],
-        conditions=', '.join(patient_data['conditions']),
-        observations=', '.join(patient_data['observations']),
-        care_plans=', '.join(patient_data['care_plans']),
-        modality=patient_data.get('modality', "Not specified"),
+        age=patient_data['BIRTHDATE'],
+        gender=patient_data['GENDER'],
+        conditions=patient_data['DESCRIPTION_cond'],
+        observations=', '.join(patient_data.get('observations', [])),  # Assuming this needs a similar change
+        care_plans=patient_data['DESCRIPTION_careplan'],
+        modality=patient_data.get('modality', "Not specified"),  # Assuming a similar field needs to be added or changed
         body_area=patient_data.get('body_area', "Not specified")
     )
     return prompt
+
+def load_patient_data(csv_path: str) -> pd.DataFrame:
+    """
+    Load patient data from a CSV file.
+    """
+    return pd.read_csv(csv_path)
+
+def select_random_patient_data(patient_data: pd.DataFrame, diagnosis: str) -> Optional[Dict[str, Any]]:
+    """
+    Select random patient data with a specific diagnosis.
+    """
+    matching_patients = patient_data[patient_data['REASONDESCRIPTION'] == diagnosis]
+    if not matching_patients.empty:
+        return matching_patients.sample(n=1).iloc[0].to_dict()
+    return None
 
 def parse_arguments() -> argparse.Namespace:
     """
     Parse command line arguments.
     """
     parser = argparse.ArgumentParser(description='Medical Report Generator')
-    parser.add_argument('--config_path', type=str, default='./config.yaml', help='Path to the YAML configuration file.')
+    parser.add_argument('--config_path', type=str, default='/Users/ayodejioyesanya/Documents/SFdev/Prompt_engineer/config.yaml', help='Path to the YAML configuration file.')
     return parser.parse_args()
 
 def main() -> None:
@@ -42,13 +58,12 @@ def main() -> None:
     """
     args = parse_arguments()
     config = load_config(args.config_path)
+    patient_data = load_patient_data(config['cleaned_data_csv_path'])
+    diagnosis = "Lung Cancer"  # Example diagnosis
+    random_patient_data = select_random_patient_data(patient_data, diagnosis)
 
-    synthea_data = SyntheaData()
-    diagnosis = "lung cancer"  # Example diagnosis
-    patient_data, modality, body_area = synthea_data.get_patient_data_by_diagnosis(diagnosis)
-
-    if patient_data:
-        medical_prompt = generate_medical_prompt(patient_data, diagnosis, config)
+    if random_patient_data:
+        medical_prompt = generate_medical_prompt(random_patient_data, diagnosis, config)
         print(medical_prompt)
     else:
         print("No patient data found for the given diagnosis.")

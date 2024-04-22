@@ -32,12 +32,14 @@ class SyntheaData:
             patient_data = {
                 'age': age,
                 'gender': selected_patient['GENDER'],
-                'conditions': [selected_patient['description_cond']],
-                'observations': [selected_patient['observation']],
-                'care_plans': [selected_patient['DESCRIPTION_careplan']],
+                'conditions': selected_patient['description_cond'],
+                'observations': selected_patient['observation'],
+                'care_plans': selected_patient['DESCRIPTION_careplan'],
+                'modality': selected_patient.get('modality', "Not specified"),
+                'body_area': selected_patient.get('body_area', "Not specified")
             }
             modality = selected_patient.get('modality')
             body_area = selected_patient.get('body_area')
             return patient_data, modality, body_area
         else:
-            return {}, None, None
+            return None, None, None

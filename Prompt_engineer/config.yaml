@@ -1,9 +1,5 @@
 # Configuration file for the medical report generator
 cleaned_data_csv_path: '/Users/ayodejioyesanya/Desktop/Tdata/cleaned_medical_data.csv'
-
-# Configuration file for the medical report generator
-cleaned_data_csv_path: '/Users/ayodejioyesanya/Desktop/Tdata/cleaned_medical_data.csv'
-
 prompt_template: |
   <s>[INST] <<SYS>> You are an experienced medical AI assistant trained to provide helpful and accurate 
   information to patients. You have extensive knowledge of human anatomy, common medical conditions, and 
