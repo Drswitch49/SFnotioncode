@@ -23,15 +23,17 @@ def calculate_age(birthdate: str) -> int:
 def generate_medical_prompt(patient_data: Dict[str, Any], diagnosis: str, config: Dict[str, Any]) -> str:
     """
     Generate a medical prompt for the medical report based on patient data and diagnosis details using a template from the configuration.
+    Uses REASONDESCRIPTION as the source for the patient's conditions.
     """
     prompt_template = config.get('prompt_template', "Default template if not specified in config.")
     age = calculate_age(patient_data['BIRTHDATE'])  # Calculating age using the BIRTHDATE field
+    conditions = patient_data.get('REASONDESCRIPTION', 'No reason description provided')  # Default message if not specified
     prompt = prompt_template.format(
         diagnosis=diagnosis,
         age=age,
         gender=patient_data['GENDER'],
-        conditions=patient_data['DESCRIPTION_cond'],
-        observations=patient_data.get('REASONDESCRIPTION', 'No reason description provided'),  # Using REASONDESCRIPTION for observations
+        conditions=conditions,  # Correct field used
+        observations=patient_data.get('observation', 'No observations recorded'),  # Use correct field for observations
         care_plans=patient_data.get('DESCRIPTION_careplan', 'No care plans recorded'),
         modality=patient_data.get('modality', "Not specified"),
         body_area=patient_data.get('body_area', "Not specified")
